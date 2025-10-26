@@ -1,0 +1,1356 @@
+openapi: 3.0.0
+info:
+  title: API de Gestão de Desenvolvimento Pessoal e Profissional
+  version: 1.0.0
+  description: Esta API permite realizar operações para gestão de desenvolvimento pessoal e profissional
+servers:
+  - url: http://localhost:3000
+    description: Servidor local de desenvolvimento
+
+# ======================
+# Paths agrupados por Tags
+# ======================
+
+# ======================
+# Usuários
+# ======================
+paths:
+  /users/register:
+    post:
+      summary: Cadastro de novo usuário
+      description: Este endpoint permite que o usuário se cadastre
+      tags: [Usuários]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string }
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '201':
+          description: Usuário criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Usuário já existe ou dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/login:
+    post:
+      summary: Login de usuário
+      tags: [Usuários]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Login realizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/me:
+    get:
+      summary: Obter perfil do usuário logado
+      tags: [Usuários]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dados do usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Editar perfil do usuário logado
+      tags: [Usuários]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                password: { type: string }
+                avatar: { type: string }
+      responses:
+        '200':
+          description: Perfil atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/logout:
+    post:
+      summary: Logout do usuário
+      tags: [Usuários]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout realizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/me/history:
+    get:
+      summary: Histórico de atividades do usuário
+      tags: [Usuários]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer }
+        - in: query
+          name: offset
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Lista de atividades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HistoryItem'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# ======================
+# Metas
+# ======================
+  /goals:
+    post:
+      summary: Criar meta
+      tags: [Metas]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalInput'
+            example:
+              title: "Meta Exemplo"
+              type: "Pessoal"
+              description: "Descrição da meta"
+              dueDate: "2025-12-31"
+              tasks: ["Tarefa 1", "Tarefa 2"]
+              evidence: ["Evidência 1"]
+              responsible: "1"
+      responses:
+        '201':
+          description: Meta criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Listar metas
+      tags: [Metas]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: period
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista de metas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Goal'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /goals/{id}:
+    get:
+      summary: Obter meta
+      tags: [Metas]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalhes da meta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '404':
+          description: Meta não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Atualizar meta
+      tags: [Metas]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalUpdate'
+      responses:
+        '200':
+          description: Meta atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Deletar meta
+      tags: [Metas]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '204':
+          description: Meta removida
+        '404':
+          description: Meta não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# ======================
+# Projetos
+# ======================
+  /projects:
+    post:
+      summary: Criar projeto
+      tags: [Projetos]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectInput'
+      responses:
+        '201':
+          description: Projeto criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Listar projetos
+      tags: [Projetos]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: period
+          schema: { type: string }
+        - in: query
+          name: responsible
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista de projetos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /projects/{id}:
+    get:
+      summary: Obter projeto
+      tags: [Projetos]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalhes do projeto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          description: Projeto não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Atualizar projeto
+      tags: [Projetos]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectUpdate'
+      responses:
+        '200':
+          description: Projeto atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Deletar projeto
+      tags: [Projetos]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '204':
+          description: Projeto removido
+        '404':
+          description: Projeto não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# ======================
+# Mentorias
+# ======================
+  /mentorships:
+    post:
+      summary: Criar registro de mentoria
+      tags: [Mentorias]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MentorshipInput'
+      responses:
+        '201':
+          description: Mentoria criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mentorship'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Listar mentorias
+      tags: [Mentorias]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: period
+          schema: { type: string }
+        - in: query
+          name: responsible
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista de mentorias
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Mentorship'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /mentorships/{id}:
+    get:
+      summary: Obter mentoria por ID
+      tags: [Mentorias]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalhes da mentoria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mentorship'
+        '404':
+          description: Mentoria não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Atualizar mentoria
+      tags: [Mentorias]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MentorshipInput'
+      responses:
+        '200':
+          description: Mentoria atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mentorship'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Deletar mentoria
+      tags: [Mentorias]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '204':
+          description: Mentoria removida
+        '404':
+          description: Mentoria não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# ======================
+# Melhorias
+# ======================
+  /improvements:
+    post:
+      summary: Criar melhoria
+      tags: [Melhorias]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImprovementInput'
+      responses:
+        '201':
+          description: Melhoria criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Improvement'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Listar melhorias
+      tags: [Melhorias]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: period
+          schema: { type: string }
+        - in: query
+          name: responsible
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista de melhorias
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Improvement'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /improvements/{id}:
+    get:
+      summary: Obter melhoria por ID
+      tags: [Melhorias]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalhes da melhoria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Improvement'
+        '404':
+          description: Melhoria não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Atualizar melhoria
+      tags: [Melhorias]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImprovementInput'
+      responses:
+        '200':
+          description: Melhoria atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Improvement'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Deletar melhoria
+      tags: [Melhorias]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '204':
+          description: Melhoria removida
+        '404':
+          description: Melhoria não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# ======================
+# Aprendizados
+# ======================
+  /learning:
+    post:
+      summary: Criar aprendizado
+      tags: [Aprendizados]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LearningInput'
+      responses:
+        '201':
+          description: Aprendizado criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Learning'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Listar aprendizados
+      tags: [Aprendizados]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema: { type: string }
+        - in: query
+          name: period
+          schema: { type: string }
+        - in: query
+          name: responsible
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista de aprendizados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Learning'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /learning/{id}:
+    get:
+      summary: Obter aprendizado por ID
+      tags: [Aprendizados]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalhes do aprendizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Learning'
+        '404':
+          description: Aprendizado não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Atualizar aprendizado
+      tags: [Aprendizados]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LearningInput'
+      responses:
+        '200':
+          description: Aprendizado atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Learning'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Deletar aprendizado
+      tags: [Aprendizados]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '204':
+          description: Aprendizado removido
+        '404':
+          description: Aprendizado não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# ======================
+# Anotações
+# ======================
+  /notes:
+    post:
+      summary: Criar anotação
+      tags: [Anotações]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteInput'
+      responses:
+        '201':
+          description: Anotação criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Listar anotações
+      tags: [Anotações]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: period
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista de anotações
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /notes/{id}:
+    get:
+      summary: Obter anotação por ID
+      tags: [Anotações]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalhes da anotação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '404':
+          description: Anotação não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Atualizar anotação
+      tags: [Anotações]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteInput'
+      responses:
+        '200':
+          description: Anotação atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Deletar anotação
+      tags: [Anotações]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '204':
+          description: Anotação removida
+        '404':
+          description: Anotação não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# ======================
+# Dashboard
+# ======================
+  /dashboard/goals-summary:
+    get:
+      summary: Resumo de metas
+      tags: [Dashboard]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Resumo de metas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalsSummary'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /dashboard/progress-graph:
+    get:
+      summary: Gráfico de evolução
+      tags: [Dashboard]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: period
+          schema: { type: string }
+      responses:
+        '200':
+          description: Dados do gráfico
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressGraph'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /dashboard/filter:
+    get:
+      summary: Filtrar dados do dashboard
+      tags: [Dashboard]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: period
+          schema: { type: string }
+      responses:
+        '200':
+          description: Dados filtrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Goal'
+        '401':
+          description: Token não fornecido ou inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# ======================
+# Components
+# ======================
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Mensagem de erro
+    
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+    
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        avatar:
+          type: string
+    
+    HistoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        action:
+          type: string
+        date:
+          type: string
+          format: date-time
+    
+    GoalInput:
+      type: object
+      required: [title, type]
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        tasks:
+          type: array
+          items:
+            type: string
+        evidence:
+          type: array
+          items:
+            type: string
+    
+    GoalUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        status:
+          type: string
+        tasks:
+          type: array
+          items:
+            type: string
+        evidence:
+          type: array
+          items:
+            type: string
+    
+    Goal:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        status:
+          type: string
+        tasks:
+          type: array
+          items:
+            type: string
+        evidence:
+          type: array
+          items:
+            type: string
+        responsible:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    
+    ProjectInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        status:
+          type: string
+    
+    ProjectUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        status:
+          type: string
+    
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        status:
+          type: string
+        responsible:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    
+    MentorshipInput:
+      type: object
+      required: [date, topic]
+      properties:
+        date:
+          type: string
+          format: date
+        topic:
+          type: string
+        notes:
+          type: string
+    
+    Mentorship:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        topic:
+          type: string
+        notes:
+          type: string
+        responsible:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    
+    ImprovementInput:
+      type: object
+      required: [date, description]
+      properties:
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+        category:
+          type: string
+    
+    Improvement:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+        category:
+          type: string
+        responsible:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    
+    LearningInput:
+      type: object
+      required: [date, content]
+      properties:
+        date:
+          type: string
+          format: date
+        content:
+          type: string
+        type:
+          type: string
+    
+    Learning:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        content:
+          type: string
+        type:
+          type: string
+        responsible:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    
+    NoteInput:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+    
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        date:
+          type: string
+          format: date-time
+    
+    GoalsSummary:
+      type: object
+      properties:
+        total:
+          type: integer
+        completed:
+          type: integer
+        inProgress:
+          type: integer
+        planned:
+          type: integer
+    
+    ProgressGraph:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
