@@ -1,11 +1,12 @@
-# API de Gestão de Desenvolvimento Pessoal e Profissional
+# API de Gestão de Desenvolvimento Profissional
 
-Esta API RESTful permite a gestão de desenvolvimento pessoal e profissional, incluindo funcionalidades para usuários, metas, projetos, mentorias, melhorias, aprendizados, anotações e dashboard de estatísticas.
+Esta API RESTful permite a gestão de desenvolvimento  profissional, incluindo funcionalidades para usuários, metas, projetos, mentorias, melhorias, aprendizados, anotações e dashboard de estatísticas.
 
 ## Tecnologias Utilizadas
 - Node.js
 - Express
 - JWT para autenticação
+- bcryptjs para criptografia de senhas
 - Banco de dados em memória
 - Documentação Swagger
 
@@ -83,6 +84,90 @@ Esta API RESTful permite a gestão de desenvolvimento pessoal e profissional, in
 - Resumo de metas (total, concluídas, em progresso, planejadas)
 - Gráfico de evolução por período
 - Filtros de dados por tipo, status e período
+
+## Regras de Negócio
+
+### Autenticação e Usuários
+- **RN001**: Ao registrar um novo usuário, o sistema deve verificar se o email já está cadastrado. Caso esteja, retornar erro "Usuário já existe"
+- **RN002**: Senhas de usuários devem ser armazenadas criptografadas usando bcrypt com salt 8
+- **RN003**: Ao fazer login, o sistema deve verificar se o email existe e se a senha está correta. Caso contrário, retornar erro específico ("Usuário não encontrado" ou "Senha inválida")
+- **RN004**: Tokens JWT gerados no login devem expirar em 1 hora
+- **RN005**: Ao buscar o perfil de um usuário, a senha nunca deve ser retornada
+- **RN006**: Senhas atualizadas no perfil devem ser re-criptografadas antes de armazenar
+- **RN007**: Histórico de atividades deve ser limitado a 10 registros por padrão, com paginação opcional
+- **RN008**: Novas ações no histórico devem ser adicionadas no início da lista (mais recente primeiro)
+- **RN029**: Histórico de usuário deve permitir paginação com offset e limit (padrão: limit=10, offset=0)
+
+### Metas
+- **RN009**: Ao criar uma meta, ela deve ter status inicial "planejada"
+- **RN010**: ID de metas deve ser gerado incrementalmente baseado no comprimento do array
+- **RN011**: Listagem de metas deve permitir filtros por tipo, status e período. Filtros são opcionais
+- **RN012**: Ao atualizar uma meta que não existe, o sistema deve retornar erro "Meta não encontrada"
+- **RN013**: Ao deletar uma meta que não existe, o sistema deve retornar erro "Meta não encontrada"
+- **RN014**: Filtro de período nas metas deve considerar metas com data de vencimento entre start e end (inclusivo)
+- **RN021**: Resumo de metas deve agrupar contagens por tipo (Pessoal/Profissional) e por status (planejada/concluída)
+- **RN022**: Cada meta deve ser contada apenas uma vez no resumo
+- **RN023**: Gráfico de progresso deve agrupar metas por mês (formato YYYY-MM) e contar planejadas vs concluídas
+- **RN024**: Filtro do dashboard segue as mesmas regras de filtro de metas (tipo, status, período)
+
+### Projetos
+- **RN010**: ID de projetos deve ser gerado incrementalmente baseado no comprimento do array
+- **RN015**: Ao criar projeto, o sistema deve adicionar timestamp de criação
+- **RN016**: Listagem de projetos deve permitir filtros por período e responsável
+- **RN019**: Ao atualizar ou deletar um projeto que não existe, o sistema deve retornar erro específico
+- **RN028**: Períodos devem ser aplicados sobre a data de vencimento (dueDate) do projeto
+
+### Mentorias
+- **RN010**: ID de mentorias deve ser gerado incrementalmente baseado no comprimento do array
+- **RN015**: Ao criar mentoria, o sistema deve adicionar timestamp de criação
+- **RN016**: Listagem de mentorias deve permitir filtros por período e responsável
+- **RN019**: Ao atualizar ou deletar uma mentoria que não existe, o sistema deve retornar erro específico
+- **RN028**: Períodos devem ser aplicados sobre a data (date) da mentoria
+
+### Melhorias
+- **RN010**: ID de melhorias deve ser gerado incrementalmente baseado no comprimento do array
+- **RN015**: Ao criar melhoria, o sistema deve adicionar timestamp de criação
+- **RN016**: Listagem de melhorias deve permitir filtros por período e responsável
+- **RN019**: Ao atualizar ou deletar uma melhoria que não existe, o sistema deve retornar erro específico
+- **RN028**: Períodos devem ser aplicados sobre a data (date) da melhoria
+
+### Aprendizados
+- **RN010**: ID de aprendizados deve ser gerado incrementalmente baseado no comprimento do array
+- **RN015**: Ao criar aprendizado, o sistema deve adicionar timestamp de criação
+- **RN017**: Listagem de aprendizados deve permitir filtros por tipo, período e responsável
+- **RN019**: Ao atualizar ou deletar um aprendizado que não existe, o sistema deve retornar erro específico
+- **RN028**: Períodos devem ser aplicados sobre a data (date) do aprendizado
+
+### Anotações
+- **RN010**: ID de anotações deve ser gerado incrementalmente baseado no comprimento do array
+- **RN015**: Ao criar anotação, o sistema deve adicionar timestamp de criação
+- **RN018**: Listagem de anotações deve permitir filtro por período
+- **RN019**: Ao atualizar ou deletar uma anotação que não existe, o sistema deve retornar erro específico
+- **RN020**: Anotações devem armazenar a data automaticamente no momento da criação
+- **RN028**: Períodos devem ser aplicados sobre a data da anotação
+
+### Dashboard
+- **RN021**: Resumo de metas deve agrupar contagens por tipo (Pessoal/Profissional) e por status (planejada/concluída)
+- **RN022**: Cada meta deve ser contada apenas uma vez no resumo
+- **RN023**: Gráfico de progresso deve agrupar metas por mês (formato YYYY-MM) e contar planejadas vs concluídas
+- **RN024**: Filtro do dashboard segue as mesmas regras de filtro de metas (tipo, status, período)
+
+## Regras Gerais do Sistema
+
+### Validação e Tratamento de Erros
+- **RN025**: Todas as entidades devem ter tratamento de erro quando não encontradas nas operações de leitura, atualização e exclusão
+- **RN026**: Busca por ID em qualquer entidade deve converter o parâmetro para número antes de comparar
+- **RN030**: Atualização de entidades deve preservar todos os campos não fornecidos e sobrescrever apenas os fornecidos (Object.assign)
+
+### Filtros e Paginação
+- **RN027**: Filtros opcionais devem funcionar de forma inclusiva (AND lógico). Todos os filtros informados devem ser satisfeitos
+- **RN028**: Períodos devem ser aplicados sobre a data da entidade (date para mentorias/melhorias/aprendizados, dueDate para metas/projetos)
+
+### Segurança e Integridade
+- **Segurança**: Senhas nunca são expostas nas respostas do sistema
+- **Incremento de ID**: IDs são sempre incrementais baseados no tamanho do array + 1
+- **Timestamps**: Todas as entidades criadas recebem timestamp automático
+- **Paginação**: Sistema de paginação aplicado apenas no histórico de usuário
 
 ## Endpoints Principais
 
