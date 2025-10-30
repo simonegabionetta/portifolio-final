@@ -1,8 +1,8 @@
 const userService = require('../services/userService');
 
-exports.register = (req, res) => {
+exports.register = async (req, res) => {
   try {
-    const user = userService.register(req.body);
+    const user = await userService.register(req.body);
     res.status(201).json(user);
   } catch (e) {
     res.status(400).json({ error: e.message });
@@ -41,7 +41,7 @@ exports.logout = (req, res) => {
   res.json({ message: 'Logout realizado com sucesso' });
 };
 
-exports.getHistory = (req, res) => {
+exports.getHistory = async (req, res) => {
   try {
     const { limit = 10, offset = 0 } = req.query;
     const history = userService.getHistory(req.user.id, Number(limit), Number(offset));

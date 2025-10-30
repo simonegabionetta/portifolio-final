@@ -2,11 +2,13 @@
 
 ## Tabela de Regras de Negócio
 
-| ID | Regra de Negócio | Entradas do Usuário | Saídas do Sistema |
+| ID |
+ Regra de Negócio | Entradas do Usuário | Saídas do Sistema |
 |---|---|---|---|
 | RN001 | Ao registrar um novo usuário, o sistema deve verificar se o email já está cadastrado. Caso esteja, retornar erro. | Nome, email, senha | Registro bem-sucedido com dados sem senha OU mensagem de erro "Usuário já existe" |
 | RN002 | Senhas de usuários devem ser armazenadas criptografadas usando bcrypt com salt 8. | Senha em texto plano | Senha criptografada com hash bcrypt |
 | RN003 | Ao fazer login, o sistema deve verificar se o email existe e se a senha está correta. Caso contrário, retornar erro específico. | Email e senha | Token JWT válido OU mensagem "Usuário não encontrado" OU "Senha inválida" |
+
 | RN004 | Tokens JWT gerados no login devem expirar em 1 hora. | Email e senha válidos | Token JWT com expiração de 1h |
 | RN005 | Ao buscar o perfil de um usuário, a senha nunca deve ser retornada. | ID do usuário | Dados do usuário sem o campo senha |
 | RN006 | Senhas atualizadas no perfil devem ser re-criptografadas antes de armazenar. | Nova senha | Senha criptografada atualizada |
