@@ -5,12 +5,12 @@ describe('users', ()=> {
   describe('POST /users/register', ()=>{
     it('Deve retornar 201 quando o usuário for criado', async() =>{
 
-      const resposta = await request('http://localhost:3000')
+      const resposta = await request(process.env.BASE_URL)
         .post('/users/register')
         .set('Content-Type','application/json')
         .send({
             'name': 'maria',
-            'email': 'maria3@gmail.com',
+            'email': 'maria4@gmail.com',
             'password': '123456'
           })
       
