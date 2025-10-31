@@ -1,0 +1,15 @@
+{
+  "putUserValido":{
+      "name": "Pedro Teste",
+      "email": "pedro@gmail.com",
+      "password": "123456",
+      "avatar": "https://avatar.com/pedro.png"
+    },
+
+    "putUserInvalido": {
+    "name": "",                         
+    "email": "emailinvalido",           
+    "password": "123",                 
+    "avatar": "não é URL"               
+}
+  }

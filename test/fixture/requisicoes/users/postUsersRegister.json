@@ -1,5 +1,14 @@
 {
-  "name": "pedro",
-  "email": "pedro@gmail.com",
-  "password": "123456"
-}
+  "userValido":{
+      "name": "Pedro Teste",
+      "email": "pedro@gmail.com",
+      "password": "123456",
+      "avatar": null
+    },
+    "userInvalido":{
+      "name": "Pedro Teste",
+      "email": "pedro@gmail.com",
+      "password": "12345",
+      "avatar": null
+    }
+  }
