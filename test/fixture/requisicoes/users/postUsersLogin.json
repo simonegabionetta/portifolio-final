@@ -1,0 +1,10 @@
+{
+  "loginValido": {
+    "email": "pedro@gmail.com",
+    "password": "123456"
+  },
+  "loginInvalido": {
+    "email": "usuarioinexistente@gmail.com",
+    "password": "12345"
+  }
+}
