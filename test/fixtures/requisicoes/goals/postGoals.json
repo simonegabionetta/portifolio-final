@@ -1,0 +1,20 @@
+{
+  "goalValida": {
+    "title": "Meta Exemplo",
+    "type": "Pessoal",
+    "description": "Descrição da meta",
+    "dueDate": "2025-12-31",
+    "tasks": ["Tarefa 1", "Tarefa 2"],
+    "evidence": ["Evidência 1"],
+    "responsible": "1"
+  },
+  "goalInvalida": {
+    "title": "",
+    "type": "",
+    "description": "",
+    "dueDate": "data invalida",
+    "tasks": [],
+    "evidence": [],
+    "responsible": ""
+  }
+}

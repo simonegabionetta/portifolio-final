@@ -1,7 +1,9 @@
 // bibliotecas
 const request = require('supertest');
 const { expect } = require('chai');
+const app = require('../../src/app');
 require('dotenv').config();
+
 
 describe('users', () => {
 
